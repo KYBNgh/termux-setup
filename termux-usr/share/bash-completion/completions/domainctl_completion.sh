@@ -1,0 +1,18 @@
+_domainctl() {
+    local options="status switch remove create"
+    local current_word="${COMP_WORDS[COMP_CWORD]}"
+    local previous_word="${COMP_WORDS[COMP_CWORD-1]}"
+    
+    case "$previous_word" in
+        switch|remove|create)
+            local domains
+            domains=$(cd /data/data/com.termux && for entry in files-*/usr; do echo "${entry#files-}"; done | sed 's|/usr||')
+            COMPREPLY=($(compgen -W "$domains" -- "$current_word"))
+            return 0
+            ;;
+    esac
+    
+    COMPREPLY=($(compgen -W "$options" -- "$current_word"))
+}
+
+complete -F _domainctl domainctl
