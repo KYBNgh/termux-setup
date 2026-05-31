@@ -198,11 +198,18 @@ add_multimedia() {
 
 main() {
     check_termux
+    
     remove_pkgs
+    
     set_main_mirror
     force_upgrade
+    
     select_packages
     install_packages
+    
     cleanup
+    
+    deploy_dir
+    deploy_dotfiles
 }
 main
