@@ -1,0 +1,214 @@
+#!/system/bin/sh
+# /data/data/com.termux/bin/domainctl
+#
+# a com.termux/files-foo directory called a domain.
+# use a symlink, com.termux/files, to point to a domain.
+# make the symlink point to different domain to switch different domain
+#
+# domain prefix is 'files-'
+#
+
+set -e
+
+PATH="/system/bin:$PATH"
+export PATH
+
+base_dir="/data/data/com.termux"
+static_link="${base_dir}/files"
+
+error() {
+    echo "error: " "$*" >&2
+}
+
+warn() {
+    echo "warn:" "$*" >&2
+}
+
+show_conversion ()
+{
+    cat <<-EOF
+    You should convert ${static_link} to a symbolic link
+    Make the symbolic link point to your environment (name it <domain>)
+
+    Commands:
+    cd "$base_dir"
+    PATH=/system/bin ; export PATH
+    mv files files-<domain>
+    ln -sv files-<domain> files
+EOF
+}
+
+show_usage ()
+{
+cat << EOF
+Usage: $0 <command> [<args>]
+Command:
+    status:        Show valid domains which include a 'usr/' subdirectory
+    switch:        Switch current domain, it will KILL ALL Termux process
+    remove:        Remove a domain, all data in files-<domain> will be DESTROYED.
+    create:        Create a empty domain, which only includes usr/ home/ directories and a ~/.profile with PATH ${base_dir}/bin
+
+Warning:
+    If you ran termux-setup-storage, your Phone storage will be linked to ~/storage/*, including dcim, pictures ...etc .
+    Directly rm -rf <domain> will REMOVE ALL your data.
+    Must unlink the symlinks or revoke the storage permission of Termux before removing a domain.
+EOF
+}
+
+get_current_domain ()
+{
+    if [ ! -L "$static_link" ]; then
+        error "$static_link is not a symlink"
+        show_conversion
+        return 1
+    else
+        current_domain=$(readlink "$static_link" | sed 's/files-//' )
+    fi
+}
+get_current_domain
+
+get_all_domains ()
+{
+    cd "${base_dir}"
+    for entry in files-*
+    do
+        # Exclude files called 'files-xxx.txt'
+        [ -d "$entry" ] || continue
+        # Exclude invalid domains which do not have 'usr' directory
+        [ -d "$entry/usr" ] || continue
+
+        echo "${entry#files-}"
+    done
+}
+
+# Sub command functions
+cmd_status ()
+{
+    echo
+    echo "Current domain: "
+    echo "$current_domain"
+    echo 
+    echo "All available domains: "
+    get_all_domains
+    echo
+}
+
+cmd_switch ()
+{
+    if [ -z "${target_domain}" ]; then
+        error "You must specify the domain"
+        return 1
+    fi
+
+    if [ ! -d "${target}/usr" ]; then
+        error "Domain cannot be empty without 'usr/'"
+        return 2
+    fi
+    
+    (
+    cd "$base_dir"
+    ln -svnf "${target_domain}" "files"
+
+        warn "Switched to $target_domain, killing Termux process"
+)
+    sync
+    pkill -TERM termux
+
+}
+
+cmd_create ()
+{
+    if [ -d "${target}" ]; then
+        warn "Domain ${target_domain} exists, skipped."
+        return 0
+    fi
+
+    mkdir -pv "${target}"
+    mkdir -pv "${target}/usr"
+    mkdir -pv "${target}/home"
+    
+    echo "Created empty domain"
+    echo "Termux will automatically install bootstrap package when you switch"
+
+    echo "Adding $base_dir/bin to PATH"
+    echo "Writting to ${target}/home/.profile"
+    echo "PATH=${base_dir}/bin:\$PATH" > "${target}"/home/.profile
+}
+
+cmd_remove ()
+{
+    if [ -w /storage/emulated/0 ];then
+        error "/storage/emulated/0 is writable"
+        error "Termux has storage permission, removing domains may delete your phone data"
+        error "Operation aborted."
+        return 2
+    fi
+
+    if [ "$target_domain" = "$current_domain" ]; then
+        error "Cannot remove current domain"
+        return 2
+    fi
+
+    printf "Type yes in uppercase to confirm: "
+    read -r answer
+    if [ "$answer" != "YES" ]; then
+        echo "Aborted."
+        return 1
+    fi
+
+    echo "Removing symlinks..."
+    find "${target}" -type l -delete || true
+
+    echo "Giving writting permissions..."
+    chmod u+rwx -R "${target}" 
+
+    echo "Removing the domain..."
+    if command -v rsync >/dev/null 2>&1; then
+
+    echo "Using rsync..."
+        empty_dir=$(mktemp -d)
+        rsync -a -v --progress --delete "$empty_dir/" "${target}/"
+
+    # Remove the empty target and temp dir
+        rmdir "$empty_dir"
+        rm -rvf "${target}"
+
+    else
+
+    echo "Using rm..."
+        rm -rvf "${target}"
+
+    fi
+}
+
+# Main functions
+subcmd="$1"
+domain_arg="${2:-}"
+
+case "$subcmd" in
+    create|switch|remove)
+        if [ -z "$domain_arg" ]; then
+            error "Missing domain name for '$subcmd' command"
+            exit 1
+        fi
+
+        target_domain="files-$domain_arg"
+        target="$base_dir/$target_domain"
+        
+        case "$subcmd" in
+            create) cmd_create ;;
+            switch) cmd_switch ;;
+            remove) cmd_remove ;;
+        esac
+        ;;
+    status)
+        cmd_status
+        ;;
+    *)
+        error "Invalid command: $subcmd"
+        show_usage
+        exit 1
+        ;;
+esac
+
+
