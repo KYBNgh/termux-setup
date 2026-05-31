@@ -125,6 +125,9 @@ deploy_dotfiles() {
     (
         cd "$dotfiles_dir"
         stow -v -t ~ . --adopt
+
+        cd ~/git/termux-setup
+        stow -v -t 
     )
 
     termux-reload-settings
