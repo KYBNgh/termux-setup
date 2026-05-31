@@ -120,7 +120,7 @@ deploy_dir() {
 deploy_dotfiles() {
     # You may want to change it if your repo is "dotfiles.git"
     local dotfiles_dir="~/git/my_config"
-    git clone "$dotfile_url" "$dotfiles_dir"
+    git clone "$dotfiles_url" "$dotfiles_dir"
 
     (
         cd "$dotfiles_dir"
