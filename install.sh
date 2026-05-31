@@ -111,10 +111,14 @@ cleanup() {
 
 deploy_dir() {
     mkdir -v ~/{doc,git}
-    ln -svn ~/tmp ../usr/tmp
-
-    ln -svn /storage/emulated/0/0-core ~/0-core
+    ln -svn "$PREFIX"/tmp ~/tmp
+    
+    termux-setup-storage
+    rm -fv ~/storage/*
+    rmdir ~/storage
+    ln -svn /storage/emulated/0/0-core ~/core
     ln -svn /storage/emulated/0/Download ~/dls
+    
 }
 
 deploy_dotfiles() {
