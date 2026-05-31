@@ -114,10 +114,10 @@ deploy_dir() {
     ln -svn "$PREFIX"/tmp ~/tmp
     
     termux-setup-storage
-    rm -fv ~/storage/*
-    rmdir ~/storage
-    ln -svn /storage/emulated/0/0-core ~/core
-    ln -svn /storage/emulated/0/Download ~/dls
+    rm -fv "$HOME"/storage/*
+    rmdir "$HOME"/storage
+    ln -svn /storage/emulated/0/0-core "$HOME"/core
+    ln -svn /storage/emulated/0/Download "$HOME"/dls
     
 }
 
