@@ -1,6 +1,6 @@
 #!/data/data/com.termux/files/usr/bin/env bash
 
-# set -u
+set -u
 
 # Default packages to remove
 rm_pkgs=(net-tools inetutils nano dos2unix patch)
@@ -127,10 +127,12 @@ deploy_dotfiles() {
     git clone "$dotfiles_url" "$dotfiles_dir"
 
     (
+        # Another dotfiles repo
         cd "$dotfiles_dir"
         stow -v -t ~ . --adopt
 
-        cd ~/git/termux-setup
+        # This is me!
+        cd "$HOME"/git/termux-setup
         stow -v -t /data/data/com.termux termux-bin
         stow -v -t /data/data/com.termux/files/usr/share/bash-completion termux-completions
     )
