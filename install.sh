@@ -14,7 +14,7 @@ tiny=no
 # Clone one's dotfiles using http
 # HTTP : https://github.com/username/dotfiles.git
 # SSH  : git@github.com:username/dotfiles.git
-dotfile_url="https://github.com/KYBNgh/my_config.git"
+dotfiles_url="https://github.com/KYBNgh/my_config.git"
 
 println() {
     printf "$@\n"
@@ -109,10 +109,27 @@ cleanup() {
     apt clean
 }
 
-create_dir
-clone_dotfiles(){
-    git clone "$dotfile_url" 
+deploy_dir() {
+    mkdir -v ~/{doc,git}
+    ln -sv ~/tmp ../usr/tmp
+
+    ln -sv /storage/emulated/0/0-core ~/0-core
+    ln -sv /storage/emulated/0/Download ~/dls
 }
+
+deploy_dotfiles() {
+    # You may want to change it if your repo is "dotfiles.git"
+    local dotfiles_dir="~/git/my_config"
+    git clone "$dotfile_url" "$dotfiles_dir"
+
+    (
+        cd "$dotfiles_dir"
+        stow -v -t ~ . --adopt
+    )
+
+    termux-reload-settings
+}
+
 # Selection sets
 add_base() {
     ins_pkg "vim"
@@ -174,10 +191,6 @@ add_multimedia() {
     ins_pkg "yt-dlp"
     ins_pkg "mpv"
 }
-
-
-
-
 
 main() {
     check_termux
