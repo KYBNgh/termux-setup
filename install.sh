@@ -128,7 +128,7 @@ deploy_dotfiles() {
 
         cd ~/git/termux-setup
         stow -v -t /data/data/com.termux termux-bin
-        stow -v -t /data/data/com.termux/
+        stow -v -t /data/data/com.termux/files/usr/share/bash-completion termux-completions
     )
 
     termux-reload-settings
