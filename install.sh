@@ -143,6 +143,7 @@ add_base() {
 }
 
 add_utils() {
+    ins_pkg "stow"
     ins_pkg "openssh"
     ins_pkg "rsync"
     ins_pkg "lf"
