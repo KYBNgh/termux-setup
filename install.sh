@@ -111,10 +111,10 @@ cleanup() {
 
 deploy_dir() {
     mkdir -v ~/{doc,git}
-    ln -sv ~/tmp ../usr/tmp
+    ln -svn ~/tmp ../usr/tmp
 
-    ln -sv /storage/emulated/0/0-core ~/0-core
-    ln -sv /storage/emulated/0/Download ~/dls
+    ln -svn /storage/emulated/0/0-core ~/0-core
+    ln -svn /storage/emulated/0/Download ~/dls
 }
 
 deploy_dotfiles() {
