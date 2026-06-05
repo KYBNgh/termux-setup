@@ -1,4 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/env bash
+# Depends on: bash git stow
 
 set -u
 
@@ -9,8 +10,9 @@ rm_pkgs=(net-tools inetutils nano dos2unix patch)
 # including: (base utils dev virt fun gui multimedia)
 use=(base utils)
 
-# Tell apt
-apt_flags=no
+# apt parameters
+# "-y" for no confirmation, "--no-install-recommends" for not install recommend packages
+apt_flags="-y "
 
 # Clone one's dotfiles using https 
 # HTTP : https://github.com/username/dotfiles.git
