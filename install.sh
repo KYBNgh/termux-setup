@@ -6,12 +6,13 @@ set -u
 rm_pkgs=(net-tools inetutils nano dos2unix patch)
 
 # Selection set. See add_* functions
+# including: (base utils dev virt fun gui multimedia)
 use=(base utils)
 
-# Set tiny=yes to not install recommend packages
-tiny=no
+# Tell apt
+apt_flags=no
 
-# Clone one's dotfiles using http
+# Clone one's dotfiles using https 
 # HTTP : https://github.com/username/dotfiles.git
 # SSH  : git@github.com:username/dotfiles.git
 dotfiles_url="https://github.com/KYBNgh/my_config.git"
@@ -53,7 +54,7 @@ set_x11_mirror() {
     println "Changing x11-repo repository to tuna mirror..."
     println
 
-    apt install x11-repo -y
+    apt install "$apt_flags" x11-repo 
     sed -i 's@^\(deb.*x11 main\)$@#\1\ndeb https://mirrors.tuna.tsinghua.edu.cn/termux/apt/termux-x11 x11 main @' $PREFIX/etc/apt/sources.list.d/x11.list
     apt update
 }
@@ -69,7 +70,7 @@ force_upgrade() {
 remove_pkgs() {
     println "Removing default packages..."
     println ""
-    apt purge -y "${rm_pkgs[@]}"
+    apt purge "$apt_flags" "${rm_pkgs[@]}"
 }
 
 select_packages() {
@@ -93,11 +94,10 @@ select_packages() {
 }
 
 install_packages() {
-    if [ "$tiny" = "yes" ]; then
-        println "tiny flag was set"
-        apt install -y --no-install-recommends "${packages[@]}"
+    if [ "$apt_flags" = "yes" ]; then
+        apt install "$apt_flags" "${packages[@]}"
     else
-        apt install -y "${packages[@]}"
+        apt install "$apt_flags" "${packages[@]}"
     fi
 }
 
@@ -105,7 +105,7 @@ cleanup() {
     println
     println "Cleaning up"
     println
-    apt autopurge -y
+    apt autopurge "$apt_flags"
     apt clean
 }
 
@@ -144,12 +144,12 @@ deploy_dotfiles() {
 add_base() {
     ins_pkg "vim"
     ins_pkg "git"
+    ins_pkg "stow"
     ins_pkg "bash-completion"
-    ins_pkg "tree"
 }
 
 add_utils() {
-    ins_pkg "stow"
+    ins_pkg "tree"
     ins_pkg "openssh"
     ins_pkg "rsync"
     ins_pkg "lf"
@@ -181,8 +181,11 @@ add_virt() {
     ins_pkg "proot"
     ins_pkg "proot-distro"
 }
+
 add_fun() {
     ins_pkg "fastfetch"
+    ins_pkg "lolcat"
+    ins_pkg "fortune"
 }
 
 add_gui() {
