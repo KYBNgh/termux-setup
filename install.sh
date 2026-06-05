@@ -152,6 +152,7 @@ add_base() {
 
 add_utils() {
     ins_pkg "tree"
+    ins_pkg "bat"
     ins_pkg "openssh"
     ins_pkg "rsync"
     ins_pkg "lf"
@@ -191,6 +192,7 @@ add_fun() {
 }
 
 add_gui() {
+  # For test, it might need configuration
     ins_pkg "termux-x11-nightly"
     ins_pkg "mesa-vulkan-icd-freedreno"
     ins_pkg "vulkan-loader-android"
