@@ -187,7 +187,6 @@ add_virt() {
 
 add_fun() {
     ins_pkg "fastfetch"
-    ins_pkg "lolcat"
     ins_pkg "fortune"
 }
 
@@ -200,7 +199,7 @@ add_gui() {
     ins_pkg "xorg-xrandr"
     ins_pkg "pulseaudio"
     ins_pkg "xfce4"
-    ins_pkg "xfce-terminal"
+    ins_pkg "xfce4-terminal"
     ins_pkg "thunar"
 }
 
