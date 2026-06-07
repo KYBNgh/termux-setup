@@ -10,9 +10,8 @@ rm_pkgs=(net-tools inetutils nano dos2unix patch)
 # including: (base utils dev virt fun gui multimedia)
 use=(base utils)
 
-# apt parameters
-# "-y" for no confirmation, "--no-install-recommends" for not install recommend packages
-apt_flags="-y "
+# set tiny=yes to not install recommands
+tiny=no
 
 # Clone one's dotfiles using https 
 # HTTP : https://github.com/username/dotfiles.git
@@ -56,7 +55,7 @@ set_x11_mirror() {
     println "Changing x11-repo repository to tuna mirror..."
     println
 
-    apt install "$apt_flags" x11-repo 
+    apt install -y x11-repo 
     sed -i 's@^\(deb.*x11 main\)$@#\1\ndeb https://mirrors.tuna.tsinghua.edu.cn/termux/apt/termux-x11 x11 main @' $PREFIX/etc/apt/sources.list.d/x11.list
     apt update
 }
@@ -72,7 +71,7 @@ force_upgrade() {
 remove_pkgs() {
     println "Removing default packages..."
     println ""
-    apt purge "$apt_flags" "${rm_pkgs[@]}"
+    apt purge -y "${rm_pkgs[@]}"
 }
 
 select_packages() {
@@ -96,10 +95,10 @@ select_packages() {
 }
 
 install_packages() {
-    if [ "$apt_flags" = "yes" ]; then
-        apt install "$apt_flags" "${packages[@]}"
+    if [ "$tiny" = "yes" ]; then
+        apt install -y --no-install-recommends "${packages[@]}"
     else
-        apt install "$apt_flags" "${packages[@]}"
+        apt install -y "${packages[@]}"
     fi
 }
 
@@ -107,7 +106,7 @@ cleanup() {
     println
     println "Cleaning up"
     println
-    apt autopurge "$apt_flags"
+    apt autopurge -y
     apt clean
 }
 
@@ -116,7 +115,7 @@ deploy_dir() {
     ln -svn "$PREFIX"/tmp ~/tmp
     
     termux-setup-storage
-    rm -fv "$HOME"/storage/*
+    rm -v "$HOME"/storage/*
     rmdir "$HOME"/storage
     ln -svn /storage/emulated/0/0-core "$HOME"/core
     ln -svn /storage/emulated/0/Download "$HOME"/dls
