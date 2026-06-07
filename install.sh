@@ -17,7 +17,7 @@ apt_flags="-y "
 # Clone one's dotfiles using https 
 # HTTP : https://github.com/username/dotfiles.git
 # SSH  : git@github.com:username/dotfiles.git
-dotfiles_url="https://github.com/KYBNgh/my_config.git"
+dotfiles_url=""
 
 println() {
     printf "$@\n"
