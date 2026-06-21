@@ -43,7 +43,8 @@ show_usage ()
 cat << EOF
 Usage: $0 <command> [<args>]
 Command:
-    status:        Show valid domains which include a 'usr/' subdirectory
+    status:        Show all domains and which one is current
+    du:            Show disk usage of each domain
     switch:        Switch current domain, it will KILL ALL Termux process
     remove:        Remove a domain, all data in files-<domain> will be DESTROYED.
     create:        Create a empty domain, which only includes usr/ home/ directories and a ~/.profile with PATH ${base_dir}/bin
@@ -84,13 +85,33 @@ get_all_domains ()
 # Sub command functions
 cmd_status ()
 {
-    echo
-    echo "Current domain: "
-    echo "$current_name"
-    echo 
-    echo "All available domains: "
-    get_all_domains
-    echo
+    printf '\n'
+    printf '  %-24s %s\n' "DOMAIN" "NOTE"
+    printf '  %s\n' "--------------------------------"
+    get_all_domains | while IFS= read -r d; do
+        if [ "$d" = "$current_name" ]; then
+            printf '  %-24s %s\n' "$d" "[current]"
+        else
+            printf '  %-24s\n' "$d"
+        fi
+    done
+    printf '\n'
+}
+
+cmd_du ()
+{
+    printf '\n'
+    printf '  %-24s %-10s %s\n' "DOMAIN" "SIZE" "NOTE"
+    printf '  %s\n' "-----------------------------------------"
+    get_all_domains | while IFS= read -r d; do
+        size=$(du -sh "${base_dir}/files-${d}" 2>/dev/null | cut -f1)
+        if [ "$d" = "$current_name" ]; then
+            printf '  %-24s %-10s %s\n' "$d" "$size" "[current]"
+        else
+            printf '  %-24s %-10s\n' "$d" "$size"
+        fi
+    done
+    printf '\n'
 }
 
 cmd_switch ()
@@ -203,6 +224,9 @@ case "$subcmd" in
         ;;
     status)
         cmd_status
+        ;;
+    du)
+        cmd_du
         ;;
     *)
         error "Invalid command: $subcmd"

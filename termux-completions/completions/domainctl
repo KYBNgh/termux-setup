@@ -1,5 +1,5 @@
 _domainctl() {
-    local options="status switch remove create"
+    local options="status switch remove create du"
     local current_word="${COMP_WORDS[COMP_CWORD]}"
     local previous_word="${COMP_WORDS[COMP_CWORD-1]}"
     
