@@ -62,7 +62,7 @@ get_current_domain ()
         show_conversion
         return 1
     else
-        current_domain=$(readlink "$static_link" | sed 's/files-//' )
+        current_name=$(readlink "$static_link" | sed 's/files-//' )
     fi
 }
 get_current_domain
@@ -86,7 +86,7 @@ cmd_status ()
 {
     echo
     echo "Current domain: "
-    echo "$current_domain"
+    echo "$current_name"
     echo 
     echo "All available domains: "
     get_all_domains
@@ -95,21 +95,21 @@ cmd_status ()
 
 cmd_switch ()
 {
-    if [ -z "${target_domain}" ]; then
+    if [ -z "${domain_dir}" ]; then
         error "You must specify the domain"
         return 1
     fi
 
-    if [ ! -d "${target}/usr" ]; then
+    if [ ! -d "${domain_path}/usr" ]; then
         error "Domain cannot be empty without 'usr/'"
         return 2
     fi
     
     (
     cd "$base_dir"
-    ln -svnf "${target_domain}" "files"
+    ln -svnf "${domain_dir}" "files"
 
-        warn "Switched to $target_domain, killing Termux process"
+        warn "Switched to $domain_dir, killing Termux process"
 )
     sync
     pkill -TERM termux
@@ -118,21 +118,21 @@ cmd_switch ()
 
 cmd_create ()
 {
-    if [ -d "${target}" ]; then
-        warn "Domain ${target_domain} exists, skipped."
+    if [ -d "${domain_path}" ]; then
+        warn "Domain ${domain_dir} exists, skipped."
         return 0
     fi
 
-    mkdir -pv "${target}"
-    mkdir -pv "${target}/usr"
-    mkdir -pv "${target}/home"
+    mkdir -pv "${domain_path}"
+    mkdir -pv "${domain_path}/usr"
+    mkdir -pv "${domain_path}/home"
     
     echo "Created empty domain"
     echo "Termux will automatically install bootstrap package when you switch"
 
     echo "Adding $base_dir/bin to PATH"
-    echo "Writting to ${target}/home/.profile"
-    echo "PATH=${base_dir}/bin:\$PATH" > "${target}"/home/.profile
+    echo "Writing to ${domain_path}/home/.profile"
+    echo "PATH=${base_dir}/bin:\$PATH" > "${domain_path}"/home/.profile
 }
 
 cmd_remove ()
@@ -144,7 +144,7 @@ cmd_remove ()
         return 2
     fi
 
-    if [ "$target_domain" = "$current_domain" ]; then
+    if [ "$domain_dir" = "files-$current_name" ]; then
         error "Cannot remove current domain"
         return 2
     fi
@@ -157,43 +157,43 @@ cmd_remove ()
     fi
 
     echo "Removing symlinks..."
-    find "${target}" -type l -delete || true
+    find "${domain_path}" -type l -delete || true
 
-    echo "Giving writting permissions..."
-    chmod u+rwx -R "${target}" 
+    echo "Giving writing permissions..."
+    chmod -R u+rwx "${domain_path}"
 
     echo "Removing the domain..."
     if command -v rsync >/dev/null 2>&1; then
 
     echo "Using rsync..."
         empty_dir=$(mktemp -d)
-        rsync -a -v --progress --delete "$empty_dir/" "${target}/"
+        rsync -a -v --progress --delete "$empty_dir/" "${domain_path}/"
 
     # Remove the empty target and temp dir
         rmdir "$empty_dir"
-        rm -rvf "${target}"
+        rm -rvf "${domain_path}"
 
     else
 
     echo "Using rm..."
-        rm -rvf "${target}"
+        rm -rvf "${domain_path}"
 
     fi
 }
 
 # Main functions
 subcmd="$1"
-domain_arg="${2:-}"
+domain_name="${2:-}"
 
 case "$subcmd" in
     create|switch|remove)
-        if [ -z "$domain_arg" ]; then
+        if [ -z "$domain_name" ]; then
             error "Missing domain name for '$subcmd' command"
             exit 1
         fi
 
-        target_domain="files-$domain_arg"
-        target="$base_dir/$target_domain"
+        domain_dir="files-$domain_name"
+        domain_path="$base_dir/$domain_dir"
         
         case "$subcmd" in
             create) cmd_create ;;
